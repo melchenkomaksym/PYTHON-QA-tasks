@@ -3,6 +3,9 @@ import requests
 from assertpy import assert_that
 
 BASE_URL = "http://localhost:5000/v1/books"
+INVALID_BOOK_ID = 255
+INVALID_BOOK_TYPE = "Comedy"
+INVALID_LIMIT = -1
 
 
 @pytest.fixture(scope="class")
@@ -27,7 +30,7 @@ class TestBookAPI:
         assert_that(response.json()["title"]).is_equal_to(title)
 
     def test_get_books_invalid_type(self, setup_teardown):
-        response = requests.get(f"{BASE_URL}/ids?book_type=InvalidType")
+        response = requests.get(f"{BASE_URL}/ids?book_type={INVALID_BOOK_TYPE}")
         assert_that(response.status_code).is_equal_to(400)
         assert_that(response.json()["message"]).contains("The book entity is not valid")
 
@@ -39,13 +42,13 @@ class TestBookAPI:
             assert_that(response.json()[0]["type"]).is_equal_to(book_type)
 
     def test_delete_invalid_book(self, setup_teardown):
-        response = requests.delete(f"{BASE_URL}/manipulation?id=invalid_id")
+        response = requests.delete(f"{BASE_URL}/manipulation?id={INVALID_BOOK_ID}")
         assert_that(response.status_code).is_equal_to(404)
         assert_that(response.json()["message"]).contains("There is no such book")
 
     def test_update_book_invalid_id(self, setup_teardown):
         payload = {"title": "Updated Title"}
-        response = requests.put(f"{BASE_URL}/manipulation?id=invalid_id", json=payload)
+        response = requests.put(f"{BASE_URL}/manipulation?id={INVALID_BOOK_ID}", json=payload)
         assert_that(response.status_code).is_equal_to(404)
         assert_that(response.json()["message"]).contains("There is no such book")
 
@@ -55,12 +58,12 @@ class TestBookAPI:
         assert_that(len(response.json())).is_less_than_or_equal_to(2)
 
     def test_get_latest_books_invalid_limit(self, setup_teardown):
-        response = requests.get(f"{BASE_URL}/latest?limit=-1")
+        response = requests.get(f"{BASE_URL}/latest?limit={INVALID_LIMIT}")
         assert_that(response.status_code).is_equal_to(400)
         assert_that(response.json()["message"]).contains("The request is not valid")
 
     def test_get_book_info_invalid_id(self, setup_teardown):
-        response = requests.get(f"{BASE_URL}/info?id=invalid_id")
+        response = requests.get(f"{BASE_URL}/info?id={INVALID_BOOK_ID}")
         assert_that(response.status_code).is_equal_to(404)
         assert_that(response.json()["message"]).contains("There is no such book")
 
